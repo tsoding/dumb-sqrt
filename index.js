@@ -86,6 +86,7 @@ function render() {
     }
     renderMarker(0, y0);
     renderMarker(0, y1);
+    renderMarker(xArg, 0);
 }
 
 function myDumbSqrt(x, trace)
@@ -107,8 +108,8 @@ function myDumbSqrt(x, trace)
     if (trace) trace(y0, y1);
     return y0;
 }
-
-myDumbSqrt(9, (y0, y1) => trace.push([y0, y1]));
+let xArg = 9;
+myDumbSqrt(xArg, (y0, y1) => trace.push([y0, y1]));
 
 console.log(trace);
 
@@ -123,6 +124,24 @@ document.addEventListener("keydown", (e) => {
     case "ArrowRight": {
         if (trace_index < trace.length - 1) trace_index += 1;
         render();
+    } break;
+    case "ArrowUp": {
+        if (xArg < MAX_Y * MAX_Y) {
+            xArg += 1;
+            trace.length = 0;
+            myDumbSqrt(xArg, (y0, y1) => trace.push([y0, y1]));
+            trace_index = 0;
+            render();
+        }
+    } break;
+    case "ArrowDown": {
+        if (xArg > 0) {
+            xArg -= 1;
+            trace.length = 0;
+            myDumbSqrt(xArg, (y0, y1) => trace.push([y0, y1]));
+            trace_index = 0;
+            render();
+        }
     } break;
     }
 })
