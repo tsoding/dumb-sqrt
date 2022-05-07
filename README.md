@@ -10,8 +10,8 @@ $ iexplore.exe index.html
 
 ## Controls
 
-Use left and right arrows to move between the states of the algorithm.
-Use up and down arrows to change argument of Sqrt function.
+- <kbd>&larr;</kbd> / <kbd>&rarr;</kbd> &ndash; prev/next state of the algorithm
+- <kbd>&uarr;</kbd> / <kbd>&darr;</kbd> &ndash; inrease decrease the searched x value
 
 ## Font
 
