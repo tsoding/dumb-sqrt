@@ -120,15 +120,19 @@ render();
 
 document.addEventListener("keydown", (e) => {
     switch (e.key) {
-    case "ArrowLeft": {
-        if (trace_index > 0) trace_index -= 1;
-        render();
+    case "ArrowUp": {
+        if (trace_index > 0) {
+            trace_index -= 1;
+            render();
+        }
+    } break;
+    case "ArrowDown": {
+        if (trace_index < trace.length - 1) {
+            trace_index += 1;
+            render();
+        }
     } break;
     case "ArrowRight": {
-        if (trace_index < trace.length - 1) trace_index += 1;
-        render();
-    } break;
-    case "ArrowUp": {
         if (xArg < MAX_Y * MAX_Y) {
             xArg += 1;
             trace.length = 0;
@@ -137,7 +141,7 @@ document.addEventListener("keydown", (e) => {
             render();
         }
     } break;
-    case "ArrowDown": {
+    case "ArrowLeft": {
         if (xArg > 0) {
             xArg -= 1;
             trace.length = 0;

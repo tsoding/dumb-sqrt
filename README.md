@@ -10,8 +10,8 @@ $ iexplore.exe index.html
 
 ## Controls
 
-- <kbd>&larr;</kbd> / <kbd>&rarr;</kbd> &ndash; prev/next state of the algorithm
-- <kbd>&uarr;</kbd> / <kbd>&darr;</kbd> &ndash; inrease decrease the searched x value
+- <kbd>&larr;</kbd> / <kbd>&rarr;</kbd> &ndash; inrease decrease the searched x value
+- <kbd>&uarr;</kbd> / <kbd>&darr;</kbd> &ndash; prev/next state of the algorithm
 
 ## Font
 
