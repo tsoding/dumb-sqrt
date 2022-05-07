@@ -74,7 +74,10 @@ function render() {
     ctx.strokeStyle = MARKER_COLOR;
     ctx.beginPath();
     ctx.moveTo(...mapToScreen(0, 0));
-    ctx.lineTo(...mapToScreen(MAX_X, MAX_Y));
+    {
+        const a = Math.min(MAX_X, MAX_Y);
+        ctx.lineTo(...mapToScreen(a, a));
+    }
     ctx.stroke();
 
     ctx.fillStyle = "#50FF5030";
