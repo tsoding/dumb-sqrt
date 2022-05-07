@@ -1,6 +1,6 @@
 # Dumb Sqrt Algorithm Visualization
 
-![thumbnail](thumbnail.png)
+[![thumbnail](thumbnail.png)](http://tsoding.org/dumb-sqrt/)
 
 ## Quick Start
 
