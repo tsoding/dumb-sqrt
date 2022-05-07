@@ -1,7 +1,3 @@
-@font-face {
-    font-family: 'LibreBaskerville';
-    src: url('fonts/LibreBaskerville-Regular.ttf') format('truetype');
-}
 body {
     background: #181818;
     color: #E0E0E0;
