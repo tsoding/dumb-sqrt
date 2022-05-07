@@ -1,0 +1,50 @@
+@font-face {
+    font-family: 'LibreBaskerville';
+    src: url('fonts/LibreBaskerville-Regular.ttf') format('truetype');
+}
+body {
+    background: #181818;
+    color: #E0E0E0;
+    font-family: LibreBaskerville;
+    margin: auto;
+    max-width: 960px;
+}
+p {
+    padding-bottom: 20px;
+}
+h1 {
+    font-size: 32px;
+    text-align: center;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+h2 {
+    font-size: 28px;
+    text-align: left;
+    padding-bottom: 20px;
+}
+kbd {
+    display: inline-block;
+    font-family: monospace;
+    padding: 3px 5px;
+    background: #303030;
+    line-height: 10px;
+    vertical-align: middle;
+    text-align: center;
+    border-radius: 5px;
+}
+ul {
+    padding-bottom: 20px;
+    list-style: inside square;
+}
+ul li {
+    padding-bottom: 10px;
+}
+#app {
+    width: 100%;
+    padding-bottom: 20px;
+}
+a {
+    color: #9090EE;
+    text-decoration: none;
+}
