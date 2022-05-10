@@ -92,19 +92,6 @@ function renderDiagonal(ctx) {
     }
     ctx.stroke();
 }
-function renderNewtonMethod(ctx, state) {
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    renderGrid(ctx);
-    renderAxis(ctx);
-    renderPlot(ctx);
-    renderDiagonal(ctx);
-    let y = state.trace[state.traceIndex];
-    ctx.strokeStyle = MARKER_COLOR;
-    ctx.beginPath();
-    ctx.moveTo(...mapPlotToCanvas(ctx, [MIN_X, y]));
-    ctx.lineTo(...mapPlotToCanvas(ctx, [MAX_X, y]));
-    ctx.stroke();
-}
 function newtonMethodSqrt(a, trace) {
     let x = a;
     for (let i = 0; i < MAX_ITERATIONS && Math.abs(x * x - a) > EPSILON; ++i) {
@@ -139,6 +126,50 @@ function binarySearchSqrt(x, trace) {
 function lerp(a, b, t) {
     return a + (b - a) * t;
 }
+class NewtonMethodWidget {
+    constructor(id, xArg) {
+        this.trace = [];
+        this.traceTime = 0;
+        this.elem = document.getElementById(id);
+        this.ctx = this.elem.getContext("2d");
+        this.xArg = xArg;
+        newtonMethodSqrt(this.xArg, (s) => this.trace.push(s));
+        this.elem.addEventListener("click", (e) => {
+            const p = mapCanvasToPlot(this.ctx, mapClientToCanvas(this.elem, [e.clientX, e.clientY]));
+            this.xArg = p[0];
+            this.trace.length = 0;
+            this.traceTime = 0;
+            newtonMethodSqrt(this.xArg, (s) => this.trace.push(s));
+        });
+    }
+    update(dt) {
+        this.traceTime = (this.traceTime + dt) % (this.trace.length * TRACE_INTERVAL);
+    }
+    render() {
+        const index = Math.floor(this.traceTime / TRACE_INTERVAL);
+        const t = this.traceTime % TRACE_INTERVAL / TRACE_INTERVAL;
+        this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+        renderGrid(this.ctx);
+        renderAxis(this.ctx);
+        renderPlot(this.ctx);
+        renderDiagonal(this.ctx);
+        const p = [this.xArg, 0];
+        renderMarker(this.ctx, p);
+        let y = lerp(this.trace[index], this.trace[(index + 1) % this.trace.length], t * t);
+        this.ctx.strokeStyle = MARKER_COLOR;
+        this.ctx.lineWidth = 5;
+        strokeLine(this.ctx, mapPlotToCanvas(this.ctx, [MIN_X, y]), mapPlotToCanvas(this.ctx, [MAX_X, y]));
+        this.ctx.lineWidth = 1;
+        this.ctx.fillStyle = "white";
+        this.ctx.font = "48px monospace";
+        this.ctx.textBaseline = "top";
+        this.ctx.fillText(this.xArg.toFixed(3), ...mapPlotToCanvas(this.ctx, p));
+        this.ctx.textBaseline = "top";
+        this.ctx.fillText(y.toFixed(3), ...mapPlotToCanvas(this.ctx, [0, y]));
+        this.ctx.strokeStyle = MARKER_COLOR;
+        strokeLine(this.ctx, mapPlotToCanvas(this.ctx, [this.xArg, MIN_Y]), mapPlotToCanvas(this.ctx, [this.xArg, MAX_Y]));
+    }
+}
 class BinarySearchWidget {
     constructor(id, xArg) {
         this.trace = [];
@@ -170,8 +201,7 @@ class BinarySearchWidget {
         renderAxis(this.ctx);
         renderPlot(this.ctx);
         renderDiagonal(this.ctx);
-        const alpha = 100;
-        this.ctx.fillStyle = "#50FF50" + alpha.toString(16).padStart(2, "0");
+        this.ctx.fillStyle = "#50FF5064";
         const [rx0, ry0] = mapPlotToCanvas(this.ctx, [0, y1]);
         const [rx1, ry1] = mapPlotToCanvas(this.ctx, [MAX_X, y0]);
         this.ctx.fillRect(rx0, ry0, rx1 - rx0, ry1 - ry0);
@@ -189,25 +219,16 @@ class BinarySearchWidget {
         strokeLine(this.ctx, mapPlotToCanvas(this.ctx, [this.xArg, MIN_Y]), mapPlotToCanvas(this.ctx, [this.xArg, MAX_Y]));
     }
 }
-function initNewtonMethodWidget(id) {
-    const newtonElem = document.getElementById(id);
-    const newtonCtx = newtonElem.getContext("2d");
-    const newtonState = {
-        trace: [],
-        traceIndex: 0,
-        xArg: 9,
-    };
-    newtonMethodSqrt(newtonState.xArg, (s) => newtonState.trace.push(s));
-    renderNewtonMethod(newtonCtx, newtonState);
-}
 let binarySearchWidget = new BinarySearchWidget("app-binary-search", 9);
-initNewtonMethodWidget("app-newton-method");
+let newtonMethodWidget = new NewtonMethodWidget("app-newton-method", 9);
 let prev = null;
 function loop(time) {
     if (prev !== null) {
         const deltaTime = (time - prev) * 0.001;
         binarySearchWidget.update(deltaTime);
         binarySearchWidget.render();
+        newtonMethodWidget.update(deltaTime);
+        newtonMethodWidget.render();
     }
     prev = time;
     window.requestAnimationFrame(loop);

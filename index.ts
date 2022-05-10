@@ -18,8 +18,7 @@ let TRACE_INTERVAL = 0.5;
 type PlotPoint   = [number, number] & {'plot coordinate system': {}};
 type CanvasPoint = [number, number] & {'canvas coordinate system determined by canvas.width and canvas.height': {}};
 type ClientPoint = [number, number] & {'client coordinate system determined by the actual size of the element': {}};
-
-type Point = [number, number];
+type Point       = [number, number];
 
 // Canvas has two sizes:
 // 1. *Canvas Size*. `[canvas.width, canvas.height]` which is set via the correspoding properties: `<canvas width='800' height='600'>`. This is the logical resolution of the canvas that is used by all of the drawing method of the canvas.
@@ -115,33 +114,6 @@ function renderDiagonal(ctx: CanvasRenderingContext2D)
     ctx.stroke();
 }
 
-interface BinarySearchState {
-    trace: Array<Point>,
-    xArg: number,
-}
-
-interface NewtonMethodState {
-    trace: Array<number>,
-    traceIndex: number,
-    xArg: number,
-}
-
-function renderNewtonMethod(ctx: CanvasRenderingContext2D, state: NewtonMethodState) {
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
-    renderGrid(ctx);
-    renderAxis(ctx);
-    renderPlot(ctx);
-    renderDiagonal(ctx);
-
-    let y = state.trace[state.traceIndex];
-    ctx.strokeStyle = MARKER_COLOR;
-    ctx.beginPath();
-    ctx.moveTo(...<Point>mapPlotToCanvas(ctx, <PlotPoint>[MIN_X, y]));
-    ctx.lineTo(...<Point>mapPlotToCanvas(ctx, <PlotPoint>[MAX_X, y]));
-    ctx.stroke();
-}
-
 function newtonMethodSqrt(a: number, trace?: (x: number) => void)
 {
     let x = a;
@@ -174,6 +146,67 @@ function binarySearchSqrt(x: number, trace?: (p: PlotPoint) => void)
 
 function lerp(a: number, b: number, t: number) {
     return a + (b - a)*t;
+}
+
+class NewtonMethodWidget {
+    private elem: HTMLCanvasElement;
+    private ctx: CanvasRenderingContext2D;
+    private trace: Array<number> = [];
+    private traceTime: number = 0;
+    private xArg: number;
+
+    constructor(id: string, xArg: number) {
+        this.elem = <HTMLCanvasElement>document.getElementById(id);
+        this.ctx = <CanvasRenderingContext2D>this.elem.getContext("2d");
+        this.xArg = xArg;
+        newtonMethodSqrt(this.xArg, (s) => this.trace.push(s))
+        this.elem.addEventListener("click", (e) => {
+            const p = mapCanvasToPlot(this.ctx, mapClientToCanvas(this.elem, <ClientPoint>[e.clientX, e.clientY]));
+            this.xArg = p[0];
+            this.trace.length = 0;
+            this.traceTime = 0;
+            newtonMethodSqrt(this.xArg, (s) => this.trace.push(s));
+        });
+    }
+
+    update(dt: number) {
+        this.traceTime = (this.traceTime + dt)%(this.trace.length*TRACE_INTERVAL);
+    }
+
+    render() {
+        const index = Math.floor(this.traceTime / TRACE_INTERVAL);
+        const t = this.traceTime % TRACE_INTERVAL / TRACE_INTERVAL;
+
+        this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+
+        renderGrid(this.ctx);
+        renderAxis(this.ctx);
+        renderPlot(this.ctx);
+        renderDiagonal(this.ctx);
+
+        const p = <PlotPoint>[this.xArg, 0];
+        renderMarker(this.ctx, p);
+
+        let y = lerp(this.trace[index], this.trace[(index + 1)%this.trace.length], t*t);
+        this.ctx.strokeStyle = MARKER_COLOR;
+        this.ctx.lineWidth = 5;
+        strokeLine(this.ctx,
+                   mapPlotToCanvas(this.ctx, <PlotPoint>[MIN_X, y]),
+                   mapPlotToCanvas(this.ctx, <PlotPoint>[MAX_X, y]));
+        this.ctx.lineWidth = 1;
+
+        this.ctx.fillStyle = "white";
+        this.ctx.font = "48px monospace";
+        this.ctx.textBaseline = "top";
+        this.ctx.fillText(this.xArg.toFixed(3), ...<Point>mapPlotToCanvas(this.ctx, p));
+        this.ctx.textBaseline = "top";
+        this.ctx.fillText(y.toFixed(3), ...<Point>mapPlotToCanvas(this.ctx, <PlotPoint>[0, y]));
+
+        this.ctx.strokeStyle = MARKER_COLOR;
+        strokeLine(this.ctx,
+                   mapPlotToCanvas(this.ctx, <PlotPoint>[this.xArg, MIN_Y]),
+                   mapPlotToCanvas(this.ctx, <PlotPoint>[this.xArg, MAX_Y]));
+    }
 }
 
 class BinarySearchWidget {
@@ -217,8 +250,7 @@ class BinarySearchWidget {
         renderPlot(this.ctx);
         renderDiagonal(this.ctx);
 
-        const alpha = 100;
-        this.ctx.fillStyle = "#50FF50" + alpha.toString(16).padStart(2, "0");
+        this.ctx.fillStyle = "#50FF5064";
         const [rx0, ry0] = mapPlotToCanvas(this.ctx, <PlotPoint>[0, y1]);
         const [rx1, ry1] = mapPlotToCanvas(this.ctx, <PlotPoint>[MAX_X, y0]);
         this.ctx.fillRect(rx0, ry0, rx1 - rx0, ry1 - ry0);
@@ -242,20 +274,8 @@ class BinarySearchWidget {
     }
 }
 
-function initNewtonMethodWidget(id: string) {
-    const newtonElem = <HTMLCanvasElement>document.getElementById(id);
-    const newtonCtx = <CanvasRenderingContext2D>newtonElem.getContext("2d");
-    const newtonState: NewtonMethodState = {
-        trace: [],
-        traceIndex: 0,
-        xArg: 9,
-    };
-    newtonMethodSqrt(newtonState.xArg, (s) => newtonState.trace.push(s))
-    renderNewtonMethod(newtonCtx, newtonState);
-}
-
 let binarySearchWidget = new BinarySearchWidget("app-binary-search", 9);
-initNewtonMethodWidget("app-newton-method");
+let newtonMethodWidget = new NewtonMethodWidget("app-newton-method", 9);
 
 let prev: DOMHighResTimeStamp | null = null;
 function loop(time: DOMHighResTimeStamp) {
@@ -263,6 +283,8 @@ function loop(time: DOMHighResTimeStamp) {
         const deltaTime = (time - prev)*0.001;
         binarySearchWidget.update(deltaTime);
         binarySearchWidget.render();
+        newtonMethodWidget.update(deltaTime);
+        newtonMethodWidget.render();
     }
     prev = time;
     window.requestAnimationFrame(loop);
