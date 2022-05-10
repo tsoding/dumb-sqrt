@@ -108,6 +108,26 @@ function binarySearchSqrt(x, trace) {
         trace([y0, y1]);
     return y0;
 }
+function prepare_sliders() {
+    let sliders = document.getElementsByClassName("slider");
+    for (let i = 0; i < sliders.length; ++i) {
+        sliders[i].addEventListener("input", function (e) {
+            let slider = e.target;
+            let value = parseFloat(slider.value);
+            MAX_X = value * ORIG_MAX_X;
+            MAX_Y = value * ORIG_MAX_Y;
+            if (value > 8) {
+                GRID_STEP = 8;
+            }
+            else if (value < 5) {
+                GRID_STEP = 1;
+            }
+            for (let i = 0; i < sliders.length; ++i) {
+                sliders[i].value = slider.value;
+            }
+        });
+    }
+}
 function lerp(a, b, t) {
     return a + (b - a) * t;
 }
@@ -208,25 +228,6 @@ let widgets = [
     new BinarySearchWidget("app-binary-search", 9),
     new NewtonMethodWidget("app-newton-method", 9)
 ];
-// Scale sliders
-let sliders = document.getElementsByClassName("slider");
-for (let i = 0; i < sliders.length; ++i) {
-    sliders[i].addEventListener("input", function (e) {
-        let slider = e.target;
-        let value = parseFloat(slider.value);
-        MAX_X = value * ORIG_MAX_X;
-        MAX_Y = value * ORIG_MAX_Y;
-        if (value > 8) {
-            GRID_STEP = 8;
-        }
-        else if (value < 5) {
-            GRID_STEP = 1;
-        }
-        for (let i = 0; i < sliders.length; ++i) {
-            sliders[i].value = slider.value;
-        }
-    });
-}
 let prevTime = null;
 function loop(time) {
     if (prevTime !== null) {
@@ -240,3 +241,4 @@ function loop(time) {
     window.requestAnimationFrame(loop);
 }
 window.requestAnimationFrame(loop);
+prepare_sliders();

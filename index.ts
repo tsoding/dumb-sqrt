@@ -128,6 +128,30 @@ function binarySearchSqrt(x: number, trace?: (p: PlotPoint) => void)
     return y0;
 }
 
+function prepare_sliders(){
+    let sliders = <HTMLCollectionOf<HTMLInputElement>>document.getElementsByClassName("slider");
+    for (let i=0; i<sliders.length; ++i) {
+        sliders[i].addEventListener("input", function(e){
+            let slider = <HTMLInputElement>e.target;
+            let value = parseFloat(slider.value);
+
+            MAX_X = value * ORIG_MAX_X;
+            MAX_Y = value * ORIG_MAX_Y;
+
+            if (value > 8) {
+                GRID_STEP = 8;
+            }
+            else if (value < 5) {
+                GRID_STEP = 1;
+            }
+
+            for (let i=0; i<sliders.length; ++i) {
+                sliders[i].value = slider.value;
+            }
+        })
+    }
+}
+
 function lerp(a: number, b: number, t: number) {
     return a + (b - a)*t;
 }
@@ -265,29 +289,6 @@ let widgets: Widget[] = [
     new NewtonMethodWidget("app-newton-method", 9)
 ];
 
-// Scale sliders
-let sliders = <HTMLCollectionOf<HTMLInputElement>>document.getElementsByClassName("slider");
-for (let i=0; i<sliders.length; ++i) {
-    sliders[i].addEventListener("input", function(e){
-        let slider = <HTMLInputElement>e.target;
-        let value = parseFloat(slider.value);
-
-        MAX_X = value * ORIG_MAX_X;
-        MAX_Y = value * ORIG_MAX_Y;
-
-        if (value > 8) {
-            GRID_STEP = 8;
-        }
-        else if (value < 5) {
-            GRID_STEP = 1;
-        }
-
-        for (let i=0; i<sliders.length; ++i) {
-            sliders[i].value = slider.value;
-        }
-    })
-}
-
 let prevTime: DOMHighResTimeStamp | null = null;
 function loop(time: DOMHighResTimeStamp) {
     if (prevTime !== null) {
@@ -301,3 +302,4 @@ function loop(time: DOMHighResTimeStamp) {
     window.requestAnimationFrame(loop);
 }
 window.requestAnimationFrame(loop);
+prepare_sliders();
