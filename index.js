@@ -170,36 +170,42 @@ function binarySearchSqrt(x, trace)
     return y0;
 }
 
-let binaryElem = document.getElementById("app-binary-search");
-let binaryCtx = binaryElem.getContext("2d");
-let binaryState = {
-    trace: [],
-    traceIndex: 0,
-    xArg: 9,
-};
-binarySearchSqrt(binaryState.xArg, (s) => binaryState.trace.push(s));
-renderBinarySearch(binaryCtx, binaryState);
-binaryElem.addEventListener("click", (e) => {
-    const state = binaryState;
-    const sqrt = binarySearchSqrt;
-    const render = renderBinarySearch;
-    const ctx = binaryCtx;
-    const p = mapCanvasToWorld(binaryCtx, 
-        ...mapClientToCanvas(binaryElem, e.clientX, e.clientY)
-    );
-    state.xArg = p[0];
-    state.trace.length = 0;
-    sqrt(state.xArg, (s) => state.trace.push(s));
-    state.traceIndex = 0;
-    render(ctx, state);
-});
+function initBinarySearchWidget(id) {
+    const binaryElem = document.getElementById(id);
+    const binaryCtx = binaryElem.getContext("2d");
+    const binaryState = {
+        trace: [],
+        xArg: 9,
+    };
+    binaryElem.addEventListener("click", (e) => {
+        const state = binaryState;
+        const sqrt = binarySearchSqrt;
+        const render = renderBinarySearch;
+        const ctx = binaryCtx;
+        const p = mapCanvasToWorld(binaryCtx, 
+            ...mapClientToCanvas(binaryElem, e.clientX, e.clientY)
+        );
+        state.xArg = p[0];
+        state.trace.length = 0;
+        sqrt(state.xArg, (s) => state.trace.push(s));
+        state.traceIndex = 0;
+        render(ctx, state);
+    });
+    binarySearchSqrt(binaryState.xArg, (s) => binaryState.trace.push(s));
+    renderBinarySearch(binaryCtx, binaryState);
+}
 
-let newtonElem = document.getElementById("app-newton-method");
-let newtonCtx = newtonElem.getContext("2d");
-let newtonState = {
-    trace: [],
-    traceIndex: 0,
-    xArg: 9,
-};
-newtonMethodSqrt(newtonState.xArg, (s) => newtonState.trace.push(s))
-renderNewtonMethod(newtonCtx, newtonState);
+function initNewtonMethodWidget(id) {
+    const newtonElem = document.getElementById(id);
+    const newtonCtx = newtonElem.getContext("2d");
+    const newtonState = {
+        trace: [],
+        traceIndex: 0,
+        xArg: 9,
+    };
+    newtonMethodSqrt(newtonState.xArg, (s) => newtonState.trace.push(s))
+    renderNewtonMethod(newtonCtx, newtonState);
+}
+
+initBinarySearchWidget("app-binary-search");
+initNewtonMethodWidget("app-newton-method");
