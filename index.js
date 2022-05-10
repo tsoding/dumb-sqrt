@@ -121,7 +121,7 @@ class NewtonMethodWidget {
         newtonMethodSqrt(this.xArg, (s) => this.trace.push(s));
         this.elem.addEventListener("click", (e) => {
             const p = mapCanvasToPlot(this.elem, mapClientToCanvas(this.elem, [e.clientX, e.clientY]));
-            this.xArg = p[0];
+            this.xArg = Math.round(p[0]);
             this.trace.length = 0;
             this.traceTime = 0;
             newtonMethodSqrt(this.xArg, (s) => this.trace.push(s));
@@ -147,8 +147,8 @@ class NewtonMethodWidget {
         this.ctx.lineWidth = 1;
         this.ctx.fillStyle = "white";
         this.ctx.font = "48px monospace";
-        this.ctx.textBaseline = "top";
-        this.ctx.fillText(this.xArg.toFixed(3), ...mapPlotToCanvas(this.elem, p));
+        this.ctx.textBaseline = "bottom";
+        this.ctx.fillText(this.xArg.toFixed(0), ...mapPlotToCanvas(this.elem, p));
         this.ctx.textBaseline = "top";
         this.ctx.fillText(y.toFixed(3), ...mapPlotToCanvas(this.elem, [0, y]));
         this.ctx.strokeStyle = MARKER_COLOR;
@@ -157,7 +157,6 @@ class NewtonMethodWidget {
 }
 class BinarySearchWidget {
     constructor(id, xArg) {
-        var _a;
         this.trace = [];
         this.traceTime = 0;
         const sqrt = binarySearchSqrt;
@@ -172,18 +171,6 @@ class BinarySearchWidget {
             this.trace.length = 0;
             this.traceTime = 0;
             sqrt(this.xArg, (s) => this.trace.push(s));
-        });
-        (_a = document.getElementById("slider")) === null || _a === void 0 ? void 0 : _a.addEventListener("input", function (e) {
-            let slider = e.target;
-            let value = parseFloat(slider.value);
-            MAX_X = value * ORIG_MAX_X;
-            MAX_Y = value * ORIG_MAX_Y;
-            if (value > 8) {
-                GRID_STEP = 8;
-            }
-            else if (value < 5) {
-                GRID_STEP = 1;
-            }
         });
     }
     update(dt) {
@@ -221,6 +208,25 @@ let widgets = [
     new BinarySearchWidget("app-binary-search", 9),
     new NewtonMethodWidget("app-newton-method", 9)
 ];
+// Scale sliders
+let sliders = document.getElementsByClassName("slider");
+for (let i = 0; i < sliders.length; ++i) {
+    sliders[i].addEventListener("input", function (e) {
+        let slider = e.target;
+        let value = parseFloat(slider.value);
+        MAX_X = value * ORIG_MAX_X;
+        MAX_Y = value * ORIG_MAX_Y;
+        if (value > 8) {
+            GRID_STEP = 8;
+        }
+        else if (value < 5) {
+            GRID_STEP = 1;
+        }
+        for (let i = 0; i < sliders.length; ++i) {
+            sliders[i].value = slider.value;
+        }
+    });
+}
 let prevTime = null;
 function loop(time) {
     if (prevTime !== null) {
