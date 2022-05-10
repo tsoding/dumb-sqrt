@@ -1,4 +1,5 @@
 "use strict";
+var _a;
 let EPSILON = 1e-6;
 let MAX_ITERATIONS = 10;
 let MARKER_COLOR = "#FF4040";
@@ -7,9 +8,11 @@ let GRID_COLOR = "#4040FF90";
 let GRID_STEP = 1;
 let MARKER_SIZE = 5;
 let MIN_X = -1.0;
-let MAX_X = 20.0;
+let ORIG_MAX_X = 20.0;
+let MAX_X = ORIG_MAX_X;
 let MIN_Y = -1.0;
-let MAX_Y = 10.0;
+let ORIG_MAX_Y = 10.0;
+let MAX_Y = ORIG_MAX_Y;
 let STEP_Y_COUNT = 200;
 let STEP_Y = (MAX_Y - MIN_Y) / STEP_Y_COUNT;
 let TRACE_INTERVAL = 0.5;
@@ -200,6 +203,13 @@ function initNewtonMethodWidget(id) {
     newtonMethodSqrt(newtonState.xArg, (s) => newtonState.trace.push(s));
     renderNewtonMethod(newtonCtx, newtonState);
 }
+(_a = document.getElementById("slider")) === null || _a === void 0 ? void 0 : _a.addEventListener("input", function (e) {
+    // Slider should change maxy and maxx
+    let slider = e.target;
+    let value = parseFloat(slider.value);
+    MAX_X = value * ORIG_MAX_X;
+    MAX_Y = value * ORIG_MAX_Y;
+});
 let binarySearchWidget = new BinarySearchWidget("app-binary-search", 9);
 initNewtonMethodWidget("app-newton-method");
 let prev = null;
