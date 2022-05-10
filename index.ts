@@ -194,7 +194,8 @@ class BinarySearchWidget {
 
         this.elem.addEventListener("click", (e) => {
             const p = mapCanvasToPlot(this.ctx, mapClientToCanvas(this.elem, <ClientPoint>[e.clientX, e.clientY]));
-            this.xArg = p[0];
+
+            this.xArg = Math.round(p[0]);
             this.trace.length = 0;
             this.traceTime = 0;
             sqrt(this.xArg, (s) => this.trace.push(s));
@@ -230,8 +231,8 @@ class BinarySearchWidget {
 
         this.ctx.fillStyle = "white";
         this.ctx.font = "48px monospace";
-        this.ctx.textBaseline = "top";
-        this.ctx.fillText(this.xArg.toFixed(3), ...<Point>mapPlotToCanvas(this.ctx, p));
+        this.ctx.textBaseline = "bottom";
+        this.ctx.fillText(this.xArg.toFixed(0), ...<Point>mapPlotToCanvas(this.ctx, p));
         this.ctx.textBaseline = "top";
         this.ctx.fillText(y0.toFixed(3), ...<Point>mapPlotToCanvas(this.ctx, <PlotPoint>[0, y0]));
         this.ctx.textBaseline = "bottom";
