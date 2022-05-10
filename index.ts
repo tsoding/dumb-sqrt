@@ -258,11 +258,16 @@ function initNewtonMethodWidget(id: string) {
 }
 
 document.getElementById("slider")?.addEventListener("input", function(e){
-    // Slider should change maxy and maxx
     let slider = <HTMLInputElement>e.target;
     let value = parseFloat(slider.value);
     MAX_X = value * ORIG_MAX_X;
     MAX_Y = value * ORIG_MAX_Y;
+    if (value > 8) {
+        GRID_STEP = 8;
+    }
+    else if (value < 5) {
+        GRID_STEP = 1;
+    }
 })
 
 let binarySearchWidget = new BinarySearchWidget("app-binary-search", 9);
