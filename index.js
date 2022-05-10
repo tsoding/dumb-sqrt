@@ -39,31 +39,25 @@ function mapPlotToCanvas(ctx, p) {
     const y = ctx.canvas.height - (y0 - MIN_Y) / (MAX_Y - MIN_Y) * ctx.canvas.height;
     return [x, y];
 }
+function strokeLine(ctx, p1, p2) {
+    ctx.beginPath();
+    ctx.moveTo(...mapPlotToCanvas(ctx, p1));
+    ctx.lineTo(...mapPlotToCanvas(ctx, p2));
+    ctx.stroke();
+}
 function renderGrid(ctx) {
     ctx.strokeStyle = GRID_COLOR;
     for (let x = MIN_X; x <= MAX_X; x += GRID_STEP) {
-        ctx.beginPath();
-        ctx.moveTo(...mapPlotToCanvas(ctx, [x, MIN_Y]));
-        ctx.lineTo(...mapPlotToCanvas(ctx, [x, MAX_Y]));
-        ctx.stroke();
+        strokeLine(ctx, [x, MIN_Y], [x, MAX_Y]);
     }
     for (let y = MIN_Y; y <= MAX_Y; y += GRID_STEP) {
-        ctx.beginPath();
-        ctx.moveTo(...mapPlotToCanvas(ctx, [MIN_X, y]));
-        ctx.lineTo(...mapPlotToCanvas(ctx, [MAX_X, y]));
-        ctx.stroke();
+        strokeLine(ctx, [MIN_X, y], [MAX_X, y]);
     }
 }
 function renderAxis(ctx) {
     ctx.strokeStyle = AXIS_COLOR;
-    ctx.beginPath();
-    ctx.moveTo(...mapPlotToCanvas(ctx, [MIN_X, 0.0]));
-    ctx.lineTo(...mapPlotToCanvas(ctx, [MAX_X, 0.0]));
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(...mapPlotToCanvas(ctx, [0.0, MIN_Y]));
-    ctx.lineTo(...mapPlotToCanvas(ctx, [0.0, MAX_Y]));
-    ctx.stroke();
+    strokeLine(ctx, [MIN_X, 0.0], [MAX_X, 0.0]);
+    strokeLine(ctx, [0.0, MIN_Y], [0.0, MAX_Y]);
 }
 function renderMarker(ctx, p) {
     const [x, y] = mapPlotToCanvas(ctx, p);
@@ -76,21 +70,10 @@ function renderPlot(ctx) {
         renderMarker(ctx, [x, y]);
     }
 }
-function strokeLine(ctx, p1, p2) {
-    ctx.beginPath();
-    ctx.moveTo(...mapPlotToCanvas(ctx, p1));
-    ctx.lineTo(...mapPlotToCanvas(ctx, p2));
-    ctx.stroke();
-}
 function renderDiagonal(ctx) {
     ctx.strokeStyle = MARKER_COLOR;
-    ctx.beginPath();
-    ctx.moveTo(...mapPlotToCanvas(ctx, [0, 0]));
-    {
-        const a = Math.min(MAX_X, MAX_Y);
-        ctx.lineTo(...mapPlotToCanvas(ctx, [a, a]));
-    }
-    ctx.stroke();
+    const a = Math.min(MAX_X, MAX_Y);
+    strokeLine(ctx, [0, 0], [a, a]);
 }
 function newtonMethodSqrt(a, trace) {
     let x = a;

@@ -49,36 +49,31 @@ function mapPlotToCanvas(ctx: CanvasRenderingContext2D, p: PlotPoint): CanvasPoi
     return <CanvasPoint>[x, y];
 }
 
+function strokeLine(ctx: CanvasRenderingContext2D, p1: PlotPoint, p2: PlotPoint)
+{
+    ctx.beginPath();
+    ctx.moveTo(...<Point>mapPlotToCanvas(ctx, p1));
+    ctx.lineTo(...<Point>mapPlotToCanvas(ctx, p2));
+    ctx.stroke();
+}
+
 function renderGrid(ctx: CanvasRenderingContext2D) {
     ctx.strokeStyle = GRID_COLOR;
 
     for (let x = MIN_X; x <= MAX_X; x += GRID_STEP) {
-        ctx.beginPath();
-        ctx.moveTo(...<Point>mapPlotToCanvas(ctx, <PlotPoint>[x, MIN_Y]));
-        ctx.lineTo(...<Point>mapPlotToCanvas(ctx, <PlotPoint>[x, MAX_Y]));
-        ctx.stroke();
+        strokeLine(ctx, <PlotPoint>[x, MIN_Y], <PlotPoint>[x, MAX_Y]);
     }
 
     for (let y = MIN_Y; y <= MAX_Y; y += GRID_STEP) {
-        ctx.beginPath();
-        ctx.moveTo(...<Point>mapPlotToCanvas(ctx, <PlotPoint>[MIN_X, y]));
-        ctx.lineTo(...<Point>mapPlotToCanvas(ctx, <PlotPoint>[MAX_X, y]));
-        ctx.stroke();
+        strokeLine(ctx, <PlotPoint>[MIN_X, y], <PlotPoint>[MAX_X, y]);
     }
 }
 
 function renderAxis(ctx: CanvasRenderingContext2D) {
     ctx.strokeStyle = AXIS_COLOR;
 
-    ctx.beginPath();
-    ctx.moveTo(...<Point>mapPlotToCanvas(ctx, <PlotPoint>[MIN_X, 0.0]));
-    ctx.lineTo(...<Point>mapPlotToCanvas(ctx, <PlotPoint>[MAX_X, 0.0]));
-    ctx.stroke();
-
-    ctx.beginPath();
-    ctx.moveTo(...<Point>mapPlotToCanvas(ctx, <PlotPoint>[0.0, MIN_Y]));
-    ctx.lineTo(...<Point>mapPlotToCanvas(ctx, <PlotPoint>[0.0, MAX_Y]));
-    ctx.stroke();
+    strokeLine(ctx, <PlotPoint>[MIN_X, 0.0], <PlotPoint>[MAX_X, 0.0]);
+    strokeLine(ctx, <PlotPoint>[0.0, MIN_Y], <PlotPoint>[0.0, MAX_Y]);
 }
 
 function renderMarker(ctx: CanvasRenderingContext2D, p: PlotPoint) {
@@ -94,24 +89,11 @@ function renderPlot(ctx: CanvasRenderingContext2D) {
     }
 }
 
-function strokeLine(ctx: CanvasRenderingContext2D, p1: PlotPoint, p2: PlotPoint)
-{
-    ctx.beginPath();
-    ctx.moveTo(...<Point>mapPlotToCanvas(ctx, p1));
-    ctx.lineTo(...<Point>mapPlotToCanvas(ctx, p2));
-    ctx.stroke();
-}
-
 function renderDiagonal(ctx: CanvasRenderingContext2D)
 {
     ctx.strokeStyle = MARKER_COLOR;
-    ctx.beginPath();
-    ctx.moveTo(...<Point>mapPlotToCanvas(ctx, <PlotPoint>[0, 0]));
-    {
-        const a = Math.min(MAX_X, MAX_Y);
-        ctx.lineTo(...<Point>mapPlotToCanvas(ctx, <PlotPoint>[a, a]));
-    }
-    ctx.stroke();
+    const a = Math.min(MAX_X, MAX_Y);
+    strokeLine(ctx, <PlotPoint>[0, 0], <PlotPoint>[a, a]);
 }
 
 function newtonMethodSqrt(a: number, trace?: (x: number) => void)
