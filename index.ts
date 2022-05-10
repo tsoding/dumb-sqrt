@@ -1,7 +1,7 @@
 type Color = string
 
 let EPSILON: number = 1e-6;
-let MAX_ITERATIONS: number = 10;
+let MAX_ITERATIONS: number = 15;
 let MARKER_COLOR: Color = "#FF4040";
 let AXIS_COLOR: Color = MARKER_COLOR;
 let GRID_COLOR: Color = "#4040FF90"
@@ -94,11 +94,11 @@ function renderPlot(ctx: CanvasRenderingContext2D) {
     }
 }
 
-function strokeLine(ctx: CanvasRenderingContext2D, p1: Point, p2: Point)
+function strokeLine(ctx: CanvasRenderingContext2D, p1: PlotPoint, p2: PlotPoint)
 {
     ctx.beginPath();
-    ctx.moveTo(...p1);
-    ctx.lineTo(...p2);
+    ctx.moveTo(...<Point>mapPlotToCanvas(ctx, p1));
+    ctx.lineTo(...<Point>mapPlotToCanvas(ctx, p2));
     ctx.stroke();
 }
 
@@ -148,7 +148,12 @@ function lerp(a: number, b: number, t: number) {
     return a + (b - a)*t;
 }
 
-class NewtonMethodWidget {
+interface Widget {
+    update(dt: number): void;
+    render(): void;
+}
+
+class NewtonMethodWidget implements Widget {
     private elem: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
     private trace: Array<number> = [];
@@ -190,9 +195,7 @@ class NewtonMethodWidget {
         let y = lerp(this.trace[index], this.trace[(index + 1)%this.trace.length], t*t);
         this.ctx.strokeStyle = MARKER_COLOR;
         this.ctx.lineWidth = 5;
-        strokeLine(this.ctx,
-                   mapPlotToCanvas(this.ctx, <PlotPoint>[MIN_X, y]),
-                   mapPlotToCanvas(this.ctx, <PlotPoint>[MAX_X, y]));
+        strokeLine(this.ctx, <PlotPoint>[MIN_X, y], <PlotPoint>[MAX_X, y]);
         this.ctx.lineWidth = 1;
 
         this.ctx.fillStyle = "white";
@@ -203,13 +206,11 @@ class NewtonMethodWidget {
         this.ctx.fillText(y.toFixed(3), ...<Point>mapPlotToCanvas(this.ctx, <PlotPoint>[0, y]));
 
         this.ctx.strokeStyle = MARKER_COLOR;
-        strokeLine(this.ctx,
-                   mapPlotToCanvas(this.ctx, <PlotPoint>[this.xArg, MIN_Y]),
-                   mapPlotToCanvas(this.ctx, <PlotPoint>[this.xArg, MAX_Y]));
+        strokeLine(this.ctx, <PlotPoint>[this.xArg, MIN_Y], <PlotPoint>[this.xArg, MAX_Y]);
     }
 }
 
-class BinarySearchWidget {
+class BinarySearchWidget implements Widget {
     private elem: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
     private trace: Array<PlotPoint> = [];
@@ -268,25 +269,25 @@ class BinarySearchWidget {
         this.ctx.fillText(y1.toFixed(3), ...<Point>mapPlotToCanvas(this.ctx, <PlotPoint>[0, y1]));
 
         this.ctx.strokeStyle = MARKER_COLOR;
-        strokeLine(this.ctx,
-                   mapPlotToCanvas(this.ctx, <PlotPoint>[this.xArg, MIN_Y]),
-                   mapPlotToCanvas(this.ctx, <PlotPoint>[this.xArg, MAX_Y]));
+        strokeLine(this.ctx, <PlotPoint>[this.xArg, MIN_Y], <PlotPoint>[this.xArg, MAX_Y]);
     }
 }
 
-let binarySearchWidget = new BinarySearchWidget("app-binary-search", 9);
-let newtonMethodWidget = new NewtonMethodWidget("app-newton-method", 9);
+let widgets: Widget[] = [
+    new BinarySearchWidget("app-binary-search", 9),
+    new NewtonMethodWidget("app-newton-method", 9)
+];
 
-let prev: DOMHighResTimeStamp | null = null;
+let prevTime: DOMHighResTimeStamp | null = null;
 function loop(time: DOMHighResTimeStamp) {
-    if (prev !== null) {
-        const deltaTime = (time - prev)*0.001;
-        binarySearchWidget.update(deltaTime);
-        binarySearchWidget.render();
-        newtonMethodWidget.update(deltaTime);
-        newtonMethodWidget.render();
+    if (prevTime !== null) {
+        const deltaTime = (time - prevTime)*0.001;
+        for (let widget of widgets) {
+            widget.update(deltaTime);
+            widget.render();
+        }
     }
-    prev = time;
+    prevTime = time;
     window.requestAnimationFrame(loop);
 }
 window.requestAnimationFrame(loop);
