@@ -17,20 +17,23 @@ let STEP_Y = (MAX_Y - MIN_Y) / STEP_Y_COUNT;
 // 2. *Client Size*. The actual size of the DOM element. You can get this size by doing canvas.getBoundingClientRect().
 // 
 // All of the mouse events are in Client coordinates. This function maps the Client coordinates to Canvas coordinates.
-function mapClientToCanvas(canvas, x0, y0) {
+function mapClientToCanvas(canvas, p) {
+    const [x0, y0] = p;
     const rect = canvas.getBoundingClientRect();
     const x = (x0 - rect.left) / (rect.right - rect.left) * canvas.width;
     const y = (y0 - rect.top) / (rect.bottom - rect.top) * canvas.height;
     return [x, y];
 }
-function mapCanvasToWorld(ctx, x0, y0) {
+function mapCanvasToPlot(ctx, p) {
     // x ∈ [0.0 .. ctx.canvas.width] => x ∈ [0.0 .. 1.0] => x ∈ [MIN_X .. MAX_X] 
+    const [x0, y0] = p;
     const x = x0 / ctx.canvas.width * (MAX_X - MIN_X) + MIN_X;
     const y = (y0 - ctx.canvas.height) * -1.0 / ctx.canvas.height * (MAX_Y - MIN_Y) + MIN_Y;
     return [x, y];
 }
-function mapWorldToCanvas(ctx, x0, y0) {
+function mapPlotToCanvas(ctx, p) {
     // x ∈ [MIN_X .. MAX_X] => x ∈ [0.0 .. 1.0] => x ∈ [0.0 .. ctx.canvas.width]
+    const [x0, y0] = p;
     const x = (x0 - MIN_X) / (MAX_X - MIN_X) * ctx.canvas.width;
     const y = ctx.canvas.height - (y0 - MIN_Y) / (MAX_Y - MIN_Y) * ctx.canvas.height;
     return [x, y];
@@ -39,32 +42,37 @@ function renderGrid(ctx) {
     ctx.strokeStyle = GRID_COLOR;
     for (let x = MIN_X; x <= MAX_X; x += GRID_STEP) {
         ctx.beginPath();
-        ctx.moveTo(...mapWorldToCanvas(ctx, x, MIN_Y));
-        ctx.lineTo(...mapWorldToCanvas(ctx, x, MAX_Y));
+        ctx.moveTo(...mapPlotToCanvas(ctx, [x, MIN_Y]));
+        ctx.lineTo(...mapPlotToCanvas(ctx, [x, MAX_Y]));
         ctx.stroke();
     }
     for (let y = MIN_Y; y <= MAX_Y; y += GRID_STEP) {
         ctx.beginPath();
-        ctx.moveTo(...mapWorldToCanvas(ctx, MIN_X, y));
-        ctx.lineTo(...mapWorldToCanvas(ctx, MAX_X, y));
+        ctx.moveTo(...mapPlotToCanvas(ctx, [MIN_X, y]));
+        ctx.lineTo(...mapPlotToCanvas(ctx, [MAX_X, y]));
         ctx.stroke();
     }
 }
 function renderAxis(ctx) {
     ctx.strokeStyle = AXIS_COLOR;
     ctx.beginPath();
-    ctx.moveTo(...mapWorldToCanvas(ctx, MIN_X, 0.0));
-    ctx.lineTo(...mapWorldToCanvas(ctx, MAX_X, 0.0));
+    ctx.moveTo(...mapPlotToCanvas(ctx, [MIN_X, 0.0]));
+    ctx.lineTo(...mapPlotToCanvas(ctx, [MAX_X, 0.0]));
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(...mapWorldToCanvas(ctx, 0.0, MIN_Y));
-    ctx.lineTo(...mapWorldToCanvas(ctx, 0.0, MAX_Y));
+    ctx.moveTo(...mapPlotToCanvas(ctx, [0.0, MIN_Y]));
+    ctx.lineTo(...mapPlotToCanvas(ctx, [0.0, MAX_Y]));
     ctx.stroke();
+}
+function renderMarker(ctx, p) {
+    const [x, y] = mapPlotToCanvas(ctx, p);
+    ctx.fillStyle = MARKER_COLOR;
+    ctx.fillRect(x - MARKER_SIZE, y - MARKER_SIZE, 2 * MARKER_SIZE, 2 * MARKER_SIZE);
 }
 function renderPlot(ctx) {
     for (let y = 0.0; y <= MAX_Y; y += STEP_Y) {
         const x = y * y;
-        renderMarker(ctx, x, y);
+        renderMarker(ctx, [x, y]);
     }
 }
 function strokeLine(ctx, p1, p2) {
@@ -76,18 +84,12 @@ function strokeLine(ctx, p1, p2) {
 function renderDiagonal(ctx) {
     ctx.strokeStyle = MARKER_COLOR;
     ctx.beginPath();
-    ctx.moveTo(...mapWorldToCanvas(ctx, 0, 0));
+    ctx.moveTo(...mapPlotToCanvas(ctx, [0, 0]));
     {
         const a = Math.min(MAX_X, MAX_Y);
-        ctx.lineTo(...mapWorldToCanvas(ctx, a, a));
+        ctx.lineTo(...mapPlotToCanvas(ctx, [a, a]));
     }
     ctx.stroke();
-}
-// TODO: try to refactor renderMarker to accept a single point
-function renderMarker(ctx, x0, y0) {
-    const [x, y] = mapWorldToCanvas(ctx, x0, y0);
-    ctx.fillStyle = MARKER_COLOR;
-    ctx.fillRect(x - MARKER_SIZE, y - MARKER_SIZE, 2 * MARKER_SIZE, 2 * MARKER_SIZE);
 }
 function renderBinarySearch(ctx, state) {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -99,13 +101,13 @@ function renderBinarySearch(ctx, state) {
         const alpha = Math.floor(1 / state.trace.length * (i + 1) * 255);
         ctx.fillStyle = "#50FF50" + alpha.toString(16).padStart(2, "0");
         const [y0, y1] = state.trace[i];
-        const [rx0, ry0] = mapWorldToCanvas(ctx, 0, y1);
-        const [rx1, ry1] = mapWorldToCanvas(ctx, MAX_X, y0);
+        const [rx0, ry0] = mapPlotToCanvas(ctx, [0, y1]);
+        const [rx1, ry1] = mapPlotToCanvas(ctx, [MAX_X, y0]);
         ctx.fillRect(rx0, ry0, rx1 - rx0, ry1 - ry0);
     }
-    renderMarker(ctx, state.xArg, 0);
+    renderMarker(ctx, [state.xArg, 0]);
     ctx.strokeStyle = MARKER_COLOR;
-    strokeLine(ctx, mapWorldToCanvas(ctx, state.xArg, MIN_Y), mapWorldToCanvas(ctx, state.xArg, MAX_Y));
+    strokeLine(ctx, mapPlotToCanvas(ctx, [state.xArg, MIN_Y]), mapPlotToCanvas(ctx, [state.xArg, MAX_Y]));
 }
 function renderNewtonMethod(ctx, state) {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -116,8 +118,8 @@ function renderNewtonMethod(ctx, state) {
     let y = state.trace[state.traceIndex];
     ctx.strokeStyle = MARKER_COLOR;
     ctx.beginPath();
-    ctx.moveTo(...mapWorldToCanvas(ctx, MIN_X, y));
-    ctx.lineTo(...mapWorldToCanvas(ctx, MAX_X, y));
+    ctx.moveTo(...mapPlotToCanvas(ctx, [MIN_X, y]));
+    ctx.lineTo(...mapPlotToCanvas(ctx, [MAX_X, y]));
     ctx.stroke();
 }
 function newtonMethodSqrt(a, trace) {
@@ -161,7 +163,7 @@ function initBinarySearchWidget(id) {
         xArg: 9,
     };
     elem.addEventListener("click", (e) => {
-        const p = mapCanvasToWorld(ctx, ...mapClientToCanvas(elem, e.clientX, e.clientY));
+        const p = mapCanvasToPlot(ctx, mapClientToCanvas(elem, [e.clientX, e.clientY]));
         state.xArg = p[0];
         state.trace.length = 0;
         sqrt(state.xArg, (s) => state.trace.push(s));
