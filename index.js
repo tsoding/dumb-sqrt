@@ -1,6 +1,6 @@
 "use strict";
 let EPSILON = 1e-6;
-let MAX_ITERATIONS = 32;
+let MAX_ITERATIONS = 10;
 let MARKER_COLOR = "#FF4040";
 let AXIS_COLOR = MARKER_COLOR;
 let GRID_COLOR = "#4040FF90";
@@ -12,6 +12,7 @@ let MIN_Y = -1.0;
 let MAX_Y = 10.0;
 let STEP_Y_COUNT = 200;
 let STEP_Y = (MAX_Y - MIN_Y) / STEP_Y_COUNT;
+let TRACE_INTERVAL = 0.5;
 // Canvas has two sizes:
 // 1. *Canvas Size*. `[canvas.width, canvas.height]` which is set via the correspoding properties: `<canvas width='800' height='600'>`. This is the logical resolution of the canvas that is used by all of the drawing method of the canvas.
 // 2. *Client Size*. The actual size of the DOM element. You can get this size by doing canvas.getBoundingClientRect().
@@ -91,24 +92,6 @@ function renderDiagonal(ctx) {
     }
     ctx.stroke();
 }
-function renderBinarySearch(ctx, state) {
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-    renderGrid(ctx);
-    renderAxis(ctx);
-    renderPlot(ctx);
-    renderDiagonal(ctx);
-    for (let i = 0; i < state.trace.length; ++i) {
-        const alpha = Math.floor(1 / state.trace.length * (i + 1) * 255);
-        ctx.fillStyle = "#50FF50" + alpha.toString(16).padStart(2, "0");
-        const [y0, y1] = state.trace[i];
-        const [rx0, ry0] = mapPlotToCanvas(ctx, [0, y1]);
-        const [rx1, ry1] = mapPlotToCanvas(ctx, [MAX_X, y0]);
-        ctx.fillRect(rx0, ry0, rx1 - rx0, ry1 - ry0);
-    }
-    renderMarker(ctx, [state.xArg, 0]);
-    ctx.strokeStyle = MARKER_COLOR;
-    strokeLine(ctx, mapPlotToCanvas(ctx, [state.xArg, MIN_Y]), mapPlotToCanvas(ctx, [state.xArg, MAX_Y]));
-}
 function renderNewtonMethod(ctx, state) {
     ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
     renderGrid(ctx);
@@ -153,24 +136,58 @@ function binarySearchSqrt(x, trace) {
         trace([y0, y1]);
     return y0;
 }
-function initBinarySearchWidget(id) {
-    const sqrt = binarySearchSqrt;
-    const render = renderBinarySearch;
-    const elem = document.getElementById(id);
-    const ctx = elem.getContext("2d");
-    const state = {
-        trace: [],
-        xArg: 9,
-    };
-    elem.addEventListener("click", (e) => {
-        const p = mapCanvasToPlot(ctx, mapClientToCanvas(elem, [e.clientX, e.clientY]));
-        state.xArg = p[0];
-        state.trace.length = 0;
-        sqrt(state.xArg, (s) => state.trace.push(s));
-        render(ctx, state);
-    });
-    sqrt(state.xArg, (s) => state.trace.push(s));
-    render(ctx, state);
+function lerp(a, b, t) {
+    return a + (b - a) * t;
+}
+class BinarySearchWidget {
+    constructor(id, xArg) {
+        this.trace = [];
+        this.traceTime = 0;
+        const sqrt = binarySearchSqrt;
+        this.xArg = xArg;
+        ;
+        this.elem = document.getElementById(id);
+        this.ctx = this.elem.getContext("2d");
+        sqrt(this.xArg, (s) => this.trace.push(s));
+        this.elem.addEventListener("click", (e) => {
+            const p = mapCanvasToPlot(this.ctx, mapClientToCanvas(this.elem, [e.clientX, e.clientY]));
+            this.xArg = p[0];
+            this.trace.length = 0;
+            this.traceTime = 0;
+            sqrt(this.xArg, (s) => this.trace.push(s));
+        });
+    }
+    update(dt) {
+        this.traceTime = (this.traceTime + dt) % (this.trace.length * TRACE_INTERVAL);
+    }
+    render() {
+        const index = Math.floor(this.traceTime / TRACE_INTERVAL);
+        const t = this.traceTime % TRACE_INTERVAL / TRACE_INTERVAL;
+        const y0 = lerp(this.trace[index][0], this.trace[(index + 1) % this.trace.length][0], t * t);
+        const y1 = lerp(this.trace[index][1], this.trace[(index + 1) % this.trace.length][1], t * t);
+        this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+        renderGrid(this.ctx);
+        renderAxis(this.ctx);
+        renderPlot(this.ctx);
+        renderDiagonal(this.ctx);
+        const alpha = 100;
+        this.ctx.fillStyle = "#50FF50" + alpha.toString(16).padStart(2, "0");
+        const [rx0, ry0] = mapPlotToCanvas(this.ctx, [0, y1]);
+        const [rx1, ry1] = mapPlotToCanvas(this.ctx, [MAX_X, y0]);
+        this.ctx.fillRect(rx0, ry0, rx1 - rx0, ry1 - ry0);
+        const p = [this.xArg, 0];
+        renderMarker(this.ctx, p);
+        this.ctx.fillStyle = "white";
+        this.ctx.font = "48px monospace";
+        this.ctx.textBaseline = "top";
+        this.ctx.fillText(this.xArg.toFixed(3), ...mapPlotToCanvas(this.ctx, p));
+        this.ctx.textBaseline = "top";
+        this.ctx.fillText(y0.toFixed(3), ...mapPlotToCanvas(this.ctx, [0, y0]));
+        this.ctx.textBaseline = "bottom";
+        this.ctx.fillText(y1.toFixed(3), ...mapPlotToCanvas(this.ctx, [0, y1]));
+        this.ctx.strokeStyle = MARKER_COLOR;
+        strokeLine(this.ctx, mapPlotToCanvas(this.ctx, [this.xArg, MIN_Y]), mapPlotToCanvas(this.ctx, [this.xArg, MAX_Y]));
+    }
 }
 function initNewtonMethodWidget(id) {
     const newtonElem = document.getElementById(id);
@@ -183,5 +200,16 @@ function initNewtonMethodWidget(id) {
     newtonMethodSqrt(newtonState.xArg, (s) => newtonState.trace.push(s));
     renderNewtonMethod(newtonCtx, newtonState);
 }
-initBinarySearchWidget("app-binary-search");
+let binarySearchWidget = new BinarySearchWidget("app-binary-search", 9);
 initNewtonMethodWidget("app-newton-method");
+let prev = null;
+function loop(time) {
+    if (prev !== null) {
+        const deltaTime = (time - prev) * 0.001;
+        binarySearchWidget.update(deltaTime);
+        binarySearchWidget.render();
+    }
+    prev = time;
+    window.requestAnimationFrame(loop);
+}
+window.requestAnimationFrame(loop);
