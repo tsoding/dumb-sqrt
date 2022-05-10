@@ -1,0 +1,23 @@
+{
+  "name": "dumb-sqrt",
+  "version": "1.0.0",
+  "description": "[![thumbnail](thumbnail.png)](http://tsoding.org/dumb-sqrt/)",
+  "main": "index.js",
+  "scripts": {
+      "build": "tsc",
+      "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tsoding/dumb-sqrt.git"
+  },
+  "author": "me",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tsoding/dumb-sqrt/issues"
+  },
+  "homepage": "https://github.com/tsoding/dumb-sqrt#readme",
+  "devDependencies": {
+    "typescript": "^4.6.4"
+  }
+}

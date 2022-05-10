@@ -8,10 +8,12 @@
 $ iexplore.exe index.html
 ```
 
-## Controls
+## Rebuilding index.js
 
-- <kbd>&larr;</kbd> / <kbd>&rarr;</kbd> &ndash; inrease decrease the searched x value
-- <kbd>&uarr;</kbd> / <kbd>&darr;</kbd> &ndash; prev/next state of the algorithm
+```console
+$ npm install
+$ npm run build
+```
 
 ## Font
 
