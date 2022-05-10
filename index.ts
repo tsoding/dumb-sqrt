@@ -13,7 +13,7 @@ let MIN_Y: number = -1.0;
 let MAX_Y: number =  10.0;
 let STEP_Y_COUNT: number = 200
 let STEP_Y: number = (MAX_Y - MIN_Y)/STEP_Y_COUNT;
-let TRACE_INTERVAL = 0.5;
+let TRACE_INTERVAL: number = 0.5;
 
 type PlotPoint   = [number, number] & {'plot coordinate system': {}};
 type CanvasPoint = [number, number] & {'canvas coordinate system determined by canvas.width and canvas.height': {}};
@@ -33,27 +33,27 @@ function mapClientToCanvas(canvas: HTMLCanvasElement, p: ClientPoint): CanvasPoi
     return <CanvasPoint>[x, y];
 }
 
-function mapCanvasToPlot(ctx: CanvasRenderingContext2D, p: CanvasPoint): PlotPoint {
+function mapCanvasToPlot(canvas: HTMLCanvasElement, p: CanvasPoint): PlotPoint {
     // x ∈ [0.0 .. ctx.canvas.width] => x ∈ [0.0 .. 1.0] => x ∈ [MIN_X .. MAX_X] 
     const [x0, y0] = p;
-    const x = x0 / ctx.canvas.width * (MAX_X - MIN_X) + MIN_X;
-    const y = (y0 - ctx.canvas.height) * -1.0 / ctx.canvas.height * (MAX_Y - MIN_Y) + MIN_Y;
+    const x = x0 / canvas.width * (MAX_X - MIN_X) + MIN_X;
+    const y = (y0 - canvas.height) * -1.0 / canvas.height * (MAX_Y - MIN_Y) + MIN_Y;
     return <PlotPoint>[x, y];
 }
 
-function mapPlotToCanvas(ctx: CanvasRenderingContext2D, p: PlotPoint): CanvasPoint {
+function mapPlotToCanvas(canvas: HTMLCanvasElement, p: PlotPoint): CanvasPoint {
     // x ∈ [MIN_X .. MAX_X] => x ∈ [0.0 .. 1.0] => x ∈ [0.0 .. ctx.canvas.width]
     const [x0, y0] = p;
-    const x = (x0 - MIN_X) / (MAX_X - MIN_X) * ctx.canvas.width;
-    const y = ctx.canvas.height - (y0 - MIN_Y) / (MAX_Y - MIN_Y) * ctx.canvas.height;
+    const x = (x0 - MIN_X) / (MAX_X - MIN_X) * canvas.width;
+    const y = canvas.height - (y0 - MIN_Y) / (MAX_Y - MIN_Y) * canvas.height;
     return <CanvasPoint>[x, y];
 }
 
 function strokeLine(ctx: CanvasRenderingContext2D, p1: PlotPoint, p2: PlotPoint)
 {
     ctx.beginPath();
-    ctx.moveTo(...<Point>mapPlotToCanvas(ctx, p1));
-    ctx.lineTo(...<Point>mapPlotToCanvas(ctx, p2));
+    ctx.moveTo(...<Point>mapPlotToCanvas(ctx.canvas, p1));
+    ctx.lineTo(...<Point>mapPlotToCanvas(ctx.canvas, p2));
     ctx.stroke();
 }
 
@@ -77,7 +77,7 @@ function renderAxis(ctx: CanvasRenderingContext2D) {
 }
 
 function renderMarker(ctx: CanvasRenderingContext2D, p: PlotPoint) {
-    const [x, y] = mapPlotToCanvas(ctx, p);
+    const [x, y] = mapPlotToCanvas(ctx.canvas, p);
     ctx.fillStyle = MARKER_COLOR;
     ctx.fillRect(x - MARKER_SIZE, y - MARKER_SIZE, 2*MARKER_SIZE, 2*MARKER_SIZE);
 }
@@ -148,7 +148,7 @@ class NewtonMethodWidget implements Widget {
         this.xArg = xArg;
         newtonMethodSqrt(this.xArg, (s) => this.trace.push(s))
         this.elem.addEventListener("click", (e) => {
-            const p = mapCanvasToPlot(this.ctx, mapClientToCanvas(this.elem, <ClientPoint>[e.clientX, e.clientY]));
+            const p = mapCanvasToPlot(this.elem, mapClientToCanvas(this.elem, <ClientPoint>[e.clientX, e.clientY]));
             this.xArg = p[0];
             this.trace.length = 0;
             this.traceTime = 0;
@@ -183,9 +183,9 @@ class NewtonMethodWidget implements Widget {
         this.ctx.fillStyle = "white";
         this.ctx.font = "48px monospace";
         this.ctx.textBaseline = "top";
-        this.ctx.fillText(this.xArg.toFixed(3), ...<Point>mapPlotToCanvas(this.ctx, p));
+        this.ctx.fillText(this.xArg.toFixed(3), ...<Point>mapPlotToCanvas(this.elem, p));
         this.ctx.textBaseline = "top";
-        this.ctx.fillText(y.toFixed(3), ...<Point>mapPlotToCanvas(this.ctx, <PlotPoint>[0, y]));
+        this.ctx.fillText(y.toFixed(3), ...<Point>mapPlotToCanvas(this.elem, <PlotPoint>[0, y]));
 
         this.ctx.strokeStyle = MARKER_COLOR;
         strokeLine(this.ctx, <PlotPoint>[this.xArg, MIN_Y], <PlotPoint>[this.xArg, MAX_Y]);
@@ -207,7 +207,7 @@ class BinarySearchWidget implements Widget {
         sqrt(this.xArg, (s) => this.trace.push(s));
 
         this.elem.addEventListener("click", (e) => {
-            const p = mapCanvasToPlot(this.ctx, mapClientToCanvas(this.elem, <ClientPoint>[e.clientX, e.clientY]));
+            const p = mapCanvasToPlot(this.elem, mapClientToCanvas(this.elem, <ClientPoint>[e.clientX, e.clientY]));
             this.xArg = p[0];
             this.trace.length = 0;
             this.traceTime = 0;
@@ -234,8 +234,8 @@ class BinarySearchWidget implements Widget {
         renderDiagonal(this.ctx);
 
         this.ctx.fillStyle = "#50FF5064";
-        const [rx0, ry0] = mapPlotToCanvas(this.ctx, <PlotPoint>[0, y1]);
-        const [rx1, ry1] = mapPlotToCanvas(this.ctx, <PlotPoint>[MAX_X, y0]);
+        const [rx0, ry0] = mapPlotToCanvas(this.elem, <PlotPoint>[0, y1]);
+        const [rx1, ry1] = mapPlotToCanvas(this.elem, <PlotPoint>[MAX_X, y0]);
         this.ctx.fillRect(rx0, ry0, rx1 - rx0, ry1 - ry0);
 
         const p = <PlotPoint>[this.xArg, 0];
@@ -244,11 +244,11 @@ class BinarySearchWidget implements Widget {
         this.ctx.fillStyle = "white";
         this.ctx.font = "48px monospace";
         this.ctx.textBaseline = "top";
-        this.ctx.fillText(this.xArg.toFixed(3), ...<Point>mapPlotToCanvas(this.ctx, p));
+        this.ctx.fillText(this.xArg.toFixed(3), ...<Point>mapPlotToCanvas(this.elem, p));
         this.ctx.textBaseline = "top";
-        this.ctx.fillText(y0.toFixed(3), ...<Point>mapPlotToCanvas(this.ctx, <PlotPoint>[0, y0]));
+        this.ctx.fillText(y0.toFixed(3), ...<Point>mapPlotToCanvas(this.elem, <PlotPoint>[0, y0]));
         this.ctx.textBaseline = "bottom";
-        this.ctx.fillText(y1.toFixed(3), ...<Point>mapPlotToCanvas(this.ctx, <PlotPoint>[0, y1]));
+        this.ctx.fillText(y1.toFixed(3), ...<Point>mapPlotToCanvas(this.elem, <PlotPoint>[0, y1]));
 
         this.ctx.strokeStyle = MARKER_COLOR;
         strokeLine(this.ctx, <PlotPoint>[this.xArg, MIN_Y], <PlotPoint>[this.xArg, MAX_Y]);

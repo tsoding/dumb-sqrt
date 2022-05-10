@@ -25,24 +25,24 @@ function mapClientToCanvas(canvas, p) {
     const y = (y0 - rect.top) / (rect.bottom - rect.top) * canvas.height;
     return [x, y];
 }
-function mapCanvasToPlot(ctx, p) {
+function mapCanvasToPlot(canvas, p) {
     // x ∈ [0.0 .. ctx.canvas.width] => x ∈ [0.0 .. 1.0] => x ∈ [MIN_X .. MAX_X] 
     const [x0, y0] = p;
-    const x = x0 / ctx.canvas.width * (MAX_X - MIN_X) + MIN_X;
-    const y = (y0 - ctx.canvas.height) * -1.0 / ctx.canvas.height * (MAX_Y - MIN_Y) + MIN_Y;
+    const x = x0 / canvas.width * (MAX_X - MIN_X) + MIN_X;
+    const y = (y0 - canvas.height) * -1.0 / canvas.height * (MAX_Y - MIN_Y) + MIN_Y;
     return [x, y];
 }
-function mapPlotToCanvas(ctx, p) {
+function mapPlotToCanvas(canvas, p) {
     // x ∈ [MIN_X .. MAX_X] => x ∈ [0.0 .. 1.0] => x ∈ [0.0 .. ctx.canvas.width]
     const [x0, y0] = p;
-    const x = (x0 - MIN_X) / (MAX_X - MIN_X) * ctx.canvas.width;
-    const y = ctx.canvas.height - (y0 - MIN_Y) / (MAX_Y - MIN_Y) * ctx.canvas.height;
+    const x = (x0 - MIN_X) / (MAX_X - MIN_X) * canvas.width;
+    const y = canvas.height - (y0 - MIN_Y) / (MAX_Y - MIN_Y) * canvas.height;
     return [x, y];
 }
 function strokeLine(ctx, p1, p2) {
     ctx.beginPath();
-    ctx.moveTo(...mapPlotToCanvas(ctx, p1));
-    ctx.lineTo(...mapPlotToCanvas(ctx, p2));
+    ctx.moveTo(...mapPlotToCanvas(ctx.canvas, p1));
+    ctx.lineTo(...mapPlotToCanvas(ctx.canvas, p2));
     ctx.stroke();
 }
 function renderGrid(ctx) {
@@ -60,7 +60,7 @@ function renderAxis(ctx) {
     strokeLine(ctx, [0.0, MIN_Y], [0.0, MAX_Y]);
 }
 function renderMarker(ctx, p) {
-    const [x, y] = mapPlotToCanvas(ctx, p);
+    const [x, y] = mapPlotToCanvas(ctx.canvas, p);
     ctx.fillStyle = MARKER_COLOR;
     ctx.fillRect(x - MARKER_SIZE, y - MARKER_SIZE, 2 * MARKER_SIZE, 2 * MARKER_SIZE);
 }
@@ -118,7 +118,7 @@ class NewtonMethodWidget {
         this.xArg = xArg;
         newtonMethodSqrt(this.xArg, (s) => this.trace.push(s));
         this.elem.addEventListener("click", (e) => {
-            const p = mapCanvasToPlot(this.ctx, mapClientToCanvas(this.elem, [e.clientX, e.clientY]));
+            const p = mapCanvasToPlot(this.elem, mapClientToCanvas(this.elem, [e.clientX, e.clientY]));
             this.xArg = p[0];
             this.trace.length = 0;
             this.traceTime = 0;
@@ -146,9 +146,9 @@ class NewtonMethodWidget {
         this.ctx.fillStyle = "white";
         this.ctx.font = "48px monospace";
         this.ctx.textBaseline = "top";
-        this.ctx.fillText(this.xArg.toFixed(3), ...mapPlotToCanvas(this.ctx, p));
+        this.ctx.fillText(this.xArg.toFixed(3), ...mapPlotToCanvas(this.elem, p));
         this.ctx.textBaseline = "top";
-        this.ctx.fillText(y.toFixed(3), ...mapPlotToCanvas(this.ctx, [0, y]));
+        this.ctx.fillText(y.toFixed(3), ...mapPlotToCanvas(this.elem, [0, y]));
         this.ctx.strokeStyle = MARKER_COLOR;
         strokeLine(this.ctx, [this.xArg, MIN_Y], [this.xArg, MAX_Y]);
     }
@@ -164,7 +164,7 @@ class BinarySearchWidget {
         this.ctx = this.elem.getContext("2d");
         sqrt(this.xArg, (s) => this.trace.push(s));
         this.elem.addEventListener("click", (e) => {
-            const p = mapCanvasToPlot(this.ctx, mapClientToCanvas(this.elem, [e.clientX, e.clientY]));
+            const p = mapCanvasToPlot(this.elem, mapClientToCanvas(this.elem, [e.clientX, e.clientY]));
             this.xArg = p[0];
             this.trace.length = 0;
             this.traceTime = 0;
@@ -185,19 +185,19 @@ class BinarySearchWidget {
         renderPlot(this.ctx);
         renderDiagonal(this.ctx);
         this.ctx.fillStyle = "#50FF5064";
-        const [rx0, ry0] = mapPlotToCanvas(this.ctx, [0, y1]);
-        const [rx1, ry1] = mapPlotToCanvas(this.ctx, [MAX_X, y0]);
+        const [rx0, ry0] = mapPlotToCanvas(this.elem, [0, y1]);
+        const [rx1, ry1] = mapPlotToCanvas(this.elem, [MAX_X, y0]);
         this.ctx.fillRect(rx0, ry0, rx1 - rx0, ry1 - ry0);
         const p = [this.xArg, 0];
         renderMarker(this.ctx, p);
         this.ctx.fillStyle = "white";
         this.ctx.font = "48px monospace";
         this.ctx.textBaseline = "top";
-        this.ctx.fillText(this.xArg.toFixed(3), ...mapPlotToCanvas(this.ctx, p));
+        this.ctx.fillText(this.xArg.toFixed(3), ...mapPlotToCanvas(this.elem, p));
         this.ctx.textBaseline = "top";
-        this.ctx.fillText(y0.toFixed(3), ...mapPlotToCanvas(this.ctx, [0, y0]));
+        this.ctx.fillText(y0.toFixed(3), ...mapPlotToCanvas(this.elem, [0, y0]));
         this.ctx.textBaseline = "bottom";
-        this.ctx.fillText(y1.toFixed(3), ...mapPlotToCanvas(this.ctx, [0, y1]));
+        this.ctx.fillText(y1.toFixed(3), ...mapPlotToCanvas(this.elem, [0, y1]));
         this.ctx.strokeStyle = MARKER_COLOR;
         strokeLine(this.ctx, [this.xArg, MIN_Y], [this.xArg, MAX_Y]);
     }
