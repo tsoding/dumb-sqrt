@@ -171,19 +171,17 @@ function binarySearchSqrt(x, trace)
 }
 
 function initBinarySearchWidget(id) {
-    const binaryElem = document.getElementById(id);
-    const binaryCtx = binaryElem.getContext("2d");
-    const binaryState = {
+    const sqrt = binarySearchSqrt;
+    const render = renderBinarySearch;
+    const elem = document.getElementById(id);
+    const ctx = elem.getContext("2d");
+    const state = {
         trace: [],
         xArg: 9,
     };
-    binaryElem.addEventListener("click", (e) => {
-        const state = binaryState;
-        const sqrt = binarySearchSqrt;
-        const render = renderBinarySearch;
-        const ctx = binaryCtx;
-        const p = mapCanvasToWorld(binaryCtx, 
-            ...mapClientToCanvas(binaryElem, e.clientX, e.clientY)
+    elem.addEventListener("click", (e) => {
+        const p = mapCanvasToWorld(ctx, 
+            ...mapClientToCanvas(elem, e.clientX, e.clientY)
         );
         state.xArg = p[0];
         state.trace.length = 0;
@@ -191,8 +189,8 @@ function initBinarySearchWidget(id) {
         state.traceIndex = 0;
         render(ctx, state);
     });
-    binarySearchSqrt(binaryState.xArg, (s) => binaryState.trace.push(s));
-    renderBinarySearch(binaryCtx, binaryState);
+    sqrt(state.xArg, (s) => state.trace.push(s));
+    render(ctx, state);
 }
 
 function initNewtonMethodWidget(id) {
