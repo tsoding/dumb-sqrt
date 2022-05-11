@@ -13,9 +13,33 @@
   <body>
     <h1>Sqrt() Algorithms Visualization</h1>
     <h2>Binary Search (Very Dumb)</h2>
+
+    <div>
+      <h3>Scale</h3>
+      <input type="range" min="1" max="15" value="1" class="slider">
+    </div>
+
+    <div class="outer-theme-container">
+      <div>Marker color</div>
+      <div class="theme-container">
+        <input type="color" class="theme-picker" id="marker-picker">
+      </div>
+    </div>
+
+    <div class="outer-theme-container">
+      <div>Grid color</div>
+      <div class="theme-container">
+        <input type="color" class="theme-picker" id="grid-picker">
+      </div>
+    </div>
+
     <canvas id="app-binary-search" class="plot" width="1600" height="800"></canvas>
     <p>Click the plot to set the X value</p>
     <h2>Newton's Method</h2>
+
+    <h3>Scale</h3>
+    <input type="range" min="1" max="15" value="1" class="slider">
+
     <canvas id="app-newton-method" class="plot" width="1600" height="800"></canvas>
     <p>Source Code on <a href="https://github.com/tsoding/dumb-sqrt">GitHub</a> | Font <a href="https://github.com/impallari/Libre-Baskerville">Libre Baskerville</a></p>
     <script src="index.js"></script>

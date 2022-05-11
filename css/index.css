@@ -45,3 +45,38 @@ a {
     color: #9090EE;
     text-decoration: none;
 }
+.slider {
+    appearance: none;
+    background-color: #696969;
+    width: 15vw;
+    height: 20px;
+    border-radius: 5px;
+    margin-bottom: 20px; 
+} 
+.slider::-webkit-slider-thumb {
+    appearance: none;
+    background-color: #FF4040;
+    border-radius: 5px;
+    width: 20px;
+    height: 20px;
+}
+.theme-picker {
+    width: 131%;
+    height: 131%;
+    margin: -14%;
+}
+.theme-container {
+    overflow: hidden;
+    display: inline-block;
+    width: 2.8em;
+    height: 2.8em;
+    border-radius: 50%;
+    border-color: transparent;
+    box-shadow: 1px 1px 10px 0px black;
+    margin: 0.5em;
+}
+.outer-theme-container {
+    text-align: center;
+    display: inline-block;
+    margin: 1em;
+}

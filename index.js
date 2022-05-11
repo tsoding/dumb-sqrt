@@ -3,13 +3,15 @@ let EPSILON = 1e-6;
 let MAX_ITERATIONS = 15;
 let MARKER_COLOR = "#FF4040";
 let AXIS_COLOR = MARKER_COLOR;
-let GRID_COLOR = "#4040FF90";
+let GRID_COLOR = "#6778FF";
 let GRID_STEP = 1;
 let MARKER_SIZE = 5;
-let MIN_X = -1.0;
-let MAX_X = 20.0;
+let MIN_X = -1;
+let ORIG_MAX_X = 20.0;
+let MAX_X = ORIG_MAX_X;
 let MIN_Y = -1.0;
-let MAX_Y = 10.0;
+let ORIG_MAX_Y = 10.0;
+let MAX_Y = ORIG_MAX_Y;
 let STEP_Y_COUNT = 200;
 let STEP_Y = (MAX_Y - MIN_Y) / STEP_Y_COUNT;
 let TRACE_INTERVAL = 0.5;
@@ -106,6 +108,54 @@ function binarySearchSqrt(x, trace) {
         trace([y0, y1]);
     return y0;
 }
+function prepareSliders() {
+    let sliders = document.getElementsByClassName("slider");
+    for (let i = 0; i < sliders.length; ++i) {
+        sliders[i].addEventListener("change", function (e) {
+            let slider = e.target;
+            let value = parseFloat(slider.value);
+            MAX_X = value * ORIG_MAX_X;
+            MAX_Y = value * ORIG_MAX_Y;
+            if (value > 8) {
+                GRID_STEP = 8;
+            }
+            else if (value < 5) {
+                GRID_STEP = 1;
+            }
+            for (let i = 0; i < sliders.length; ++i) {
+                sliders[i].value = slider.value;
+            }
+        });
+    }
+}
+function prepareThemePickers() {
+    let pickers = document.getElementsByClassName("theme-picker");
+    for (let i = 0; i < pickers.length; ++i) {
+        pickers[i].addEventListener("input", function (e) {
+            let picker = e.target;
+            if (picker.id === "marker-picker") {
+                MARKER_COLOR = picker.value;
+                AXIS_COLOR = MARKER_COLOR;
+            }
+            else if (picker.id === "grid-picker") {
+                GRID_COLOR = picker.value;
+            }
+            else {
+                throw new Error("Unknown theme picker: " + picker.id);
+            }
+        });
+        // Sets default values
+        if (pickers[i].id === "marker-picker") {
+            pickers[i].value = MARKER_COLOR;
+        }
+        else if (pickers[i].id === "grid-picker") {
+            pickers[i].value = GRID_COLOR;
+        }
+        else {
+            throw new Error("Unknown theme picker: " + pickers[i].id);
+        }
+    }
+}
 function lerp(a, b, t) {
     return a + (b - a) * t;
 }
@@ -119,7 +169,9 @@ class NewtonMethodWidget {
         newtonMethodSqrt(this.xArg, (s) => this.trace.push(s));
         this.elem.addEventListener("click", (e) => {
             const p = mapCanvasToPlot(this.elem, mapClientToCanvas(this.elem, [e.clientX, e.clientY]));
-            this.xArg = p[0];
+            this.xArg = Math.round(p[0]);
+            if (this.xArg < 0)
+                this.xArg = 0;
             this.trace.length = 0;
             this.traceTime = 0;
             newtonMethodSqrt(this.xArg, (s) => this.trace.push(s));
@@ -145,8 +197,8 @@ class NewtonMethodWidget {
         this.ctx.lineWidth = 1;
         this.ctx.fillStyle = "white";
         this.ctx.font = "48px monospace";
-        this.ctx.textBaseline = "top";
-        this.ctx.fillText(this.xArg.toFixed(3), ...mapPlotToCanvas(this.elem, p));
+        this.ctx.textBaseline = "bottom";
+        this.ctx.fillText(this.xArg.toFixed(0), ...mapPlotToCanvas(this.elem, p));
         this.ctx.textBaseline = "top";
         this.ctx.fillText(y.toFixed(3), ...mapPlotToCanvas(this.elem, [0, y]));
         this.ctx.strokeStyle = MARKER_COLOR;
@@ -165,7 +217,9 @@ class BinarySearchWidget {
         sqrt(this.xArg, (s) => this.trace.push(s));
         this.elem.addEventListener("click", (e) => {
             const p = mapCanvasToPlot(this.elem, mapClientToCanvas(this.elem, [e.clientX, e.clientY]));
-            this.xArg = p[0];
+            this.xArg = Math.round(p[0]);
+            if (this.xArg < 0)
+                this.xArg = 0;
             this.trace.length = 0;
             this.traceTime = 0;
             sqrt(this.xArg, (s) => this.trace.push(s));
@@ -192,8 +246,8 @@ class BinarySearchWidget {
         renderMarker(this.ctx, p);
         this.ctx.fillStyle = "white";
         this.ctx.font = "48px monospace";
-        this.ctx.textBaseline = "top";
-        this.ctx.fillText(this.xArg.toFixed(3), ...mapPlotToCanvas(this.elem, p));
+        this.ctx.textBaseline = "bottom";
+        this.ctx.fillText(this.xArg.toFixed(0), ...mapPlotToCanvas(this.elem, p));
         this.ctx.textBaseline = "top";
         this.ctx.fillText(y0.toFixed(3), ...mapPlotToCanvas(this.elem, [0, y0]));
         this.ctx.textBaseline = "bottom";
@@ -219,3 +273,5 @@ function loop(time) {
     window.requestAnimationFrame(loop);
 }
 window.requestAnimationFrame(loop);
+prepareSliders();
+prepareThemePickers();
