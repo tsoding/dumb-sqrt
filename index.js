@@ -3,7 +3,7 @@ let EPSILON = 1e-6;
 let MAX_ITERATIONS = 15;
 let MARKER_COLOR = "#FF4040";
 let AXIS_COLOR = MARKER_COLOR;
-let GRID_COLOR = "#4040FF90";
+let GRID_COLOR = "#6778FF";
 let GRID_STEP = 1;
 let MARKER_SIZE = 5;
 let MIN_X = -1.0;
@@ -108,10 +108,10 @@ function binarySearchSqrt(x, trace) {
         trace([y0, y1]);
     return y0;
 }
-function prepare_sliders() {
+function prepareSliders() {
     let sliders = document.getElementsByClassName("slider");
     for (let i = 0; i < sliders.length; ++i) {
-        sliders[i].addEventListener("input", function (e) {
+        sliders[i].addEventListener("change", function (e) {
             let slider = e.target;
             let value = parseFloat(slider.value);
             MAX_X = value * ORIG_MAX_X;
@@ -126,6 +126,33 @@ function prepare_sliders() {
                 sliders[i].value = slider.value;
             }
         });
+    }
+}
+function prepareThemePickers() {
+    let pickers = document.getElementsByClassName("theme-picker");
+    for (let i = 0; i < pickers.length; ++i) {
+        pickers[i].addEventListener("change", function (e) {
+            let picker = e.target;
+            if (picker.id === "marker-picker") {
+                MARKER_COLOR = picker.value;
+            }
+            else if (picker.id === "grid-picker") {
+                GRID_COLOR = picker.value;
+            }
+            else {
+                throw new Error("Unknown theme picker: " + picker.id);
+            }
+        });
+        // Sets default values
+        if (pickers[i].id === "marker-picker") {
+            pickers[i].value = MARKER_COLOR;
+        }
+        else if (pickers[i].id === "grid-picker") {
+            pickers[i].value = GRID_COLOR;
+        }
+        else {
+            throw new Error("Unknown theme picker: " + pickers[i].id);
+        }
     }
 }
 function lerp(a, b, t) {
@@ -241,4 +268,5 @@ function loop(time) {
     window.requestAnimationFrame(loop);
 }
 window.requestAnimationFrame(loop);
-prepare_sliders();
+prepareSliders();
+prepareThemePickers();
