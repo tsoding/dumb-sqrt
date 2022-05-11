@@ -135,6 +135,7 @@ function prepareThemePickers() {
             let picker = e.target;
             if (picker.id === "marker-picker") {
                 MARKER_COLOR = picker.value;
+                AXIS_COLOR = MARKER_COLOR;
             }
             else if (picker.id === "grid-picker") {
                 GRID_COLOR = picker.value;
