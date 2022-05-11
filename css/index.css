@@ -45,3 +45,18 @@ a {
     color: #9090EE;
     text-decoration: none;
 }
+.slider {
+    appearance: none;
+    background-color: #696969;
+    width: 15vw;
+    height: 20px;
+    border-radius: 5px;
+    margin-bottom: 20px; 
+} 
+.slider::-webkit-slider-thumb {
+    appearance: none;
+    background-color: #FF4040;
+    border-radius: 5px;
+    width: 20px;
+    height: 20px;
+}
