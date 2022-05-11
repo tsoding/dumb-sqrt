@@ -4,7 +4,7 @@ let EPSILON: number = 1e-6;
 let MAX_ITERATIONS: number = 15;
 let MARKER_COLOR: Color = "#FF4040";
 let AXIS_COLOR: Color = MARKER_COLOR;
-let GRID_COLOR: Color = "#4040FF90"
+let GRID_COLOR: Color = "#6778FF"
 let GRID_STEP: number = 1;
 let MARKER_SIZE: number = 5
 let MIN_X: number = -1.0;
@@ -128,10 +128,10 @@ function binarySearchSqrt(x: number, trace?: (p: PlotPoint) => void)
     return y0;
 }
 
-function prepare_sliders(){
+function prepareSliders() : void {
     let sliders = <HTMLCollectionOf<HTMLInputElement>>document.getElementsByClassName("slider");
     for (let i=0; i<sliders.length; ++i) {
-        sliders[i].addEventListener("input", function(e){
+        sliders[i].addEventListener("change", function(e){
             let slider = <HTMLInputElement>e.target;
             let value = parseFloat(slider.value);
 
@@ -149,6 +149,35 @@ function prepare_sliders(){
                 sliders[i].value = slider.value;
             }
         })
+    }
+}
+
+function prepareThemePickers(): void {
+    let pickers = <HTMLCollectionOf<HTMLInputElement>>document.getElementsByClassName("theme-picker");
+    for (let i=0; i<pickers.length; ++i) {
+        pickers[i].addEventListener("change", function(e) {
+            let picker = <HTMLInputElement>e.target;
+            if (picker.id === "marker-picker") {
+                MARKER_COLOR = picker.value;
+            }
+            else if (picker.id === "grid-picker") {
+                GRID_COLOR = picker.value;
+            }
+            else {
+                throw new Error("Unknown theme picker: " + picker.id);
+            }
+        });
+
+        // Sets default values
+        if (pickers[i].id === "marker-picker") {
+            pickers[i].value = MARKER_COLOR;
+        }
+        else if (pickers[i].id === "grid-picker") {
+            pickers[i].value = GRID_COLOR;
+        }
+        else {
+            throw new Error("Unknown theme picker: " + pickers[i].id);
+        }
     }
 }
 
@@ -302,4 +331,5 @@ function loop(time: DOMHighResTimeStamp) {
     window.requestAnimationFrame(loop);
 }
 window.requestAnimationFrame(loop);
-prepare_sliders();
+prepareSliders();
+prepareThemePickers();
