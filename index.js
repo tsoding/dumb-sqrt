@@ -6,7 +6,7 @@ let AXIS_COLOR = MARKER_COLOR;
 let GRID_COLOR = "#6778FF";
 let GRID_STEP = 1;
 let MARKER_SIZE = 5;
-let MIN_X = -1.0;
+let MIN_X = -1;
 let ORIG_MAX_X = 20.0;
 let MAX_X = ORIG_MAX_X;
 let MIN_Y = -1.0;
@@ -170,6 +170,8 @@ class NewtonMethodWidget {
         this.elem.addEventListener("click", (e) => {
             const p = mapCanvasToPlot(this.elem, mapClientToCanvas(this.elem, [e.clientX, e.clientY]));
             this.xArg = Math.round(p[0]);
+            if (this.xArg < 0)
+                this.xArg = 0;
             this.trace.length = 0;
             this.traceTime = 0;
             newtonMethodSqrt(this.xArg, (s) => this.trace.push(s));
@@ -216,6 +218,8 @@ class BinarySearchWidget {
         this.elem.addEventListener("click", (e) => {
             const p = mapCanvasToPlot(this.elem, mapClientToCanvas(this.elem, [e.clientX, e.clientY]));
             this.xArg = Math.round(p[0]);
+            if (this.xArg < 0)
+                this.xArg = 0;
             this.trace.length = 0;
             this.traceTime = 0;
             sqrt(this.xArg, (s) => this.trace.push(s));
