@@ -16,7 +16,7 @@
 
     <h2 id="binary-search">Binary Search (Very Dumb)</h2>
     <p>I came up with this algorithm myself based on my understanding of the square root definition. If you have <code>y</code> it is very easy to check if it is a square root of <code>x</code>. You just check if <code>y*y == x</code>.</p>
-    <p>So the algorithm starts with defining two values: <code>y0 = 0</code> and <code>y1 = x</code>. The value <code>sqrt(x)</code> lies somwhere between <code>y0</code> and <code>y1</code>. We simply perform <a href="https://en.wikipedia.org/wiki/Binary_search_algorithm">Binary search</a>  on them until we narrow down <code>y0</code> and <code>y1</code> to <code>y == sqrt(x)</code> with an acceptable precision.</p>
+    <p>So the algorithm starts with defining two values: <code>y0 = 0</code> and <code>y1 = x</code>. The value <code>sqrt(x)</code> lies somewhere between <code>y0</code> and <code>y1</code>. We simply perform <a href="https://en.wikipedia.org/wiki/Binary_search_algorithm">Binary search</a>  on them until we narrow down <code>y0</code> and <code>y1</code> to <code>y == sqrt(x)</code> with an acceptable precision.</p>
     <p>Very slow algorithm but it works and was fun to implement and animate.</p>
     <canvas id="app-binary-search" class="plot" width="1600" height="800"></canvas>
     <p>Click the plot to set the X value</p>
