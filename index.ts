@@ -7,7 +7,7 @@ let AXIS_COLOR: Color = MARKER_COLOR;
 let GRID_COLOR: Color = "#6778FF"
 let GRID_STEP: number = 1;
 let MARKER_SIZE: number = 5
-let MIN_X: number = -1.0;
+let MIN_X: number = -1;
 let ORIG_MAX_X: number =  20.0;
 let MAX_X: number =  ORIG_MAX_X;
 let MIN_Y: number = -1.0;
@@ -152,13 +152,14 @@ function prepareSliders() : void {
     }
 }
 
-function prepareThemePickers(): void {
+function prepareThemePickers() : void {
     let pickers = <HTMLCollectionOf<HTMLInputElement>>document.getElementsByClassName("theme-picker");
     for (let i=0; i<pickers.length; ++i) {
         pickers[i].addEventListener("change", function(e) {
             let picker = <HTMLInputElement>e.target;
             if (picker.id === "marker-picker") {
                 MARKER_COLOR = picker.value;
+                AXIS_COLOR = MARKER_COLOR;
             }
             else if (picker.id === "grid-picker") {
                 GRID_COLOR = picker.value;
@@ -206,6 +207,7 @@ class NewtonMethodWidget implements Widget {
             const p = mapCanvasToPlot(this.elem, mapClientToCanvas(this.elem, <ClientPoint>[e.clientX, e.clientY]));
 
             this.xArg = Math.round(p[0]);
+            if (this.xArg < 0) this.xArg = 0;
             this.trace.length = 0;
             this.traceTime = 0;
 
@@ -267,6 +269,7 @@ class BinarySearchWidget implements Widget {
             const p = mapCanvasToPlot(this.elem, mapClientToCanvas(this.elem, <ClientPoint>[e.clientX, e.clientY]));
 
             this.xArg = Math.round(p[0]);
+            if (this.xArg < 0) this.xArg = 0;
             this.trace.length = 0;
             this.traceTime = 0;
             sqrt(this.xArg, (s) => this.trace.push(s));
