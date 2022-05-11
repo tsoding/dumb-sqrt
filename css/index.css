@@ -1,24 +1,26 @@
 body {
     background: #181818;
-    color: #E0E0E0;
+    color: #F0F0F0;
     font-family: LibreBaskerville;
     margin: auto;
     max-width: 960px;
+    font-size: 16px;
 }
 p {
     padding-bottom: 20px;
+    line-height: 1.5;
 }
 h1 {
-    font-size: 32px;
+    font-size: 40px;
     text-align: center;
-    padding-top: 20px;
-    padding-bottom: 20px;
+    padding-top: 40px;
+    padding-bottom: 40px;
 }
 h2 {
     font-size: 28px;
     text-align: left;
-    padding-bottom: 20px;
     padding-top: 20px;
+    padding-bottom: 40px;
 }
 kbd {
     display: inline-block;
@@ -29,6 +31,9 @@ kbd {
     vertical-align: middle;
     text-align: center;
     border-radius: 5px;
+}
+code {
+    font-family: monospace;
 }
 ul {
     padding-bottom: 20px;
