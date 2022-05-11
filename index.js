@@ -131,7 +131,7 @@ function prepareSliders() {
 function prepareThemePickers() {
     let pickers = document.getElementsByClassName("theme-picker");
     for (let i = 0; i < pickers.length; ++i) {
-        pickers[i].addEventListener("change", function (e) {
+        pickers[i].addEventListener("input", function (e) {
             let picker = e.target;
             if (picker.id === "marker-picker") {
                 MARKER_COLOR = picker.value;
