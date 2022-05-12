@@ -36,6 +36,7 @@ kbd {
     border-radius: 5px;
 }
 code {
+    display: inline-block;
     font-family: monospace;
 }
 ul {
@@ -52,4 +53,12 @@ ul li {
 a {
     color: #9090EE;
     text-decoration: none;
+}
+.author {
+    text-align: center;
+    padding-bottom: 40px;
+    font-style: italic;
+}
+.author a {
+    color: #F0F0F0;
 }
