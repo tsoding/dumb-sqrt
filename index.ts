@@ -23,7 +23,7 @@ type Point       = [number, number];
 // Canvas has two sizes:
 // 1. *Canvas Size*. `[canvas.width, canvas.height]` which is set via the correspoding properties: `<canvas width='800' height='600'>`. This is the logical resolution of the canvas that is used by all of the drawing method of the canvas.
 // 2. *Client Size*. The actual size of the DOM element. You can get this size by doing canvas.getBoundingClientRect().
-// 
+//
 // All of the mouse events are in Client coordinates. This function maps the Client coordinates to Canvas coordinates.
 function mapClientToCanvas(canvas: HTMLCanvasElement, p: ClientPoint): CanvasPoint {
     const [x0, y0] = p;
@@ -34,7 +34,7 @@ function mapClientToCanvas(canvas: HTMLCanvasElement, p: ClientPoint): CanvasPoi
 }
 
 function mapCanvasToPlot(canvas: HTMLCanvasElement, p: CanvasPoint): PlotPoint {
-    // x ∈ [0.0 .. ctx.canvas.width] => x ∈ [0.0 .. 1.0] => x ∈ [MIN_X .. MAX_X] 
+    // x ∈ [0.0 .. ctx.canvas.width] => x ∈ [0.0 .. 1.0] => x ∈ [MIN_X .. MAX_X]
     const [x0, y0] = p;
     const x = x0 / canvas.width * (MAX_X - MIN_X) + MIN_X;
     const y = (y0 - canvas.height) * -1.0 / canvas.height * (MAX_Y - MIN_Y) + MIN_Y;
@@ -141,6 +141,7 @@ class NewtonMethodWidget implements Widget {
     private trace: Array<number> = [];
     private traceTime: number = 0;
     private xArg: number;
+    private paused: boolean = true;
 
     constructor(id: string, xArg: number) {
         this.elem = <HTMLCanvasElement>document.getElementById(id);
@@ -154,10 +155,14 @@ class NewtonMethodWidget implements Widget {
             this.traceTime = 0;
             newtonMethodSqrt(this.xArg, (s) => this.trace.push(s));
         });
+        this.elem.addEventListener("mouseenter", () => this.paused = false);
+        this.elem.addEventListener("mouseleave", () => this.paused = true);
     }
 
     update(dt: number) {
-        this.traceTime = (this.traceTime + dt)%(this.trace.length*TRACE_INTERVAL);
+        if (!this.paused) {
+            this.traceTime = (this.traceTime + dt)%(this.trace.length*TRACE_INTERVAL);
+        }
     }
 
     render() {
@@ -190,6 +195,11 @@ class NewtonMethodWidget implements Widget {
         this.ctx.strokeStyle = MARKER_COLOR;
         strokeLine(this.ctx, <PlotPoint>[this.xArg, MIN_Y], <PlotPoint>[this.xArg, MAX_Y]);
     }
+
+    containsClientY(clientY: number): boolean {
+        const rect = this.elem.getBoundingClientRect();
+        return rect.y <= clientY && clientY < rect.y + rect.height;
+    }
 }
 
 class BinarySearchWidget implements Widget {
@@ -198,6 +208,7 @@ class BinarySearchWidget implements Widget {
     private trace: Array<PlotPoint> = [];
     private traceTime: number = 0;
     private xArg: number;
+    private paused: boolean = true;
 
     constructor(id: string, xArg: number) {
         const sqrt = binarySearchSqrt;
@@ -213,10 +224,14 @@ class BinarySearchWidget implements Widget {
             this.traceTime = 0;
             sqrt(this.xArg, (s) => this.trace.push(s));
         });
-    }
+        this.elem.addEventListener("mouseenter", () => this.paused = false);
+        this.elem.addEventListener("mouseleave", () => this.paused = true);
+   }
 
     update(dt: number) {
-        this.traceTime = (this.traceTime + dt)%(this.trace.length*TRACE_INTERVAL);
+        if (!this.paused) {
+            this.traceTime = (this.traceTime + dt)%(this.trace.length*TRACE_INTERVAL);
+        }
     }
 
     render() {
@@ -252,6 +267,11 @@ class BinarySearchWidget implements Widget {
 
         this.ctx.strokeStyle = MARKER_COLOR;
         strokeLine(this.ctx, <PlotPoint>[this.xArg, MIN_Y], <PlotPoint>[this.xArg, MAX_Y]);
+    }
+
+    containsClientY(clientY: number): boolean {
+        const rect = this.elem.getBoundingClientRect();
+        return rect.y <= clientY && clientY < rect.y + rect.height;
     }
 }
 
